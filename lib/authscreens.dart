@@ -1,8 +1,6 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
+import 'firebase_service.dart';
 
-FirebaseAuth auth = FirebaseAuth.instance;
 
 class Login extends StatelessWidget {
   const Login({super.key});
@@ -11,7 +9,9 @@ class Login extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Login'),
+        toolbarHeight: 100,
+        title: const Text('Login', style: TextStyle(color: Colors.white)),
+        centerTitle: true,
       ),
       body: const LoginForm()
     );
@@ -38,60 +38,54 @@ class LoginFormState extends State<LoginForm> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextFormField(
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 1.5, horizontal: 13),
+            child: TextFormField(
             decoration: const InputDecoration(
-              hintText: "Enter your username/email here"
+              hintText: "Username/email",
             ),
             controller: usernameController,
-    ),
-          TextFormField(
-            decoration: const InputDecoration(
-              hintText: "Enter password"
+    ),),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 1.5, horizontal: 13),
+            child: TextFormField(
+              decoration: const InputDecoration(
+                hintText: "Password"
             ),
             controller: passwordController,
-            ),
-          Row(
-            children: [
-                  Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      try {
-                        UserCredential userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
-                            email: usernameController.text,
-                            password: passwordController.text,
-                        );
-                      } on FirebaseAuthException catch (e) {
-                        if (e.code == 'user-not-found') {
-                          print('No user found for that email.');
-                        } else if (e.code == 'wrong-password') {
-                          print('Wrong password provided for that user.');
-                        }
-                      }
-                    },
-                    child: const Text("Submit")
-                  )
-          ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.pushNamed(context, '/newpassword');
-                  },
-                  child: const Text("Forgot password?")
-                )
-              )
-          ]
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 40.0),
+            ),),
+          Align(
+              alignment: Alignment.centerRight,
+              child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                    child: TextButton(
+                        onPressed: () {
+                          Navigator.pushNamed(context, '/newpassword');
+                        },
+                        child: const Text("Forgot password?")
+                    )
+          ),),
+          Center(
             child:
-              TextButton(
+                  Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 32.0),
+                  child: ElevatedButton(
+                    onPressed: () async {await FirebaseService().LoginUser(email: usernameController.text, password: passwordController.text);},
+                    child: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 18.0, vertical: 15.0),
+                    child:Text("Login", style: TextStyle(color: Colors.white))
+                  ),),
+          ),),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 30.0),
+            child:
+              Center(child: TextButton(
                 onPressed: () {
                   Navigator.pushNamed(context, "/createAcct");
                 },
                 child: const Text("Create New Account")
-              )
+
+              ))
           )
         ]
       ),
@@ -124,9 +118,11 @@ class CreateAcctFormState extends State<CreateAcctForm> {
   final GlobalKey<FormState> _accountFormKey = GlobalKey<FormState>();
   String? dropdownValue;
   TextEditingController emailController = TextEditingController();
-  TextEditingController usernameController = TextEditingController();
+  TextEditingController fullnameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
   TextEditingController password2controller = TextEditingController();
+  bool createfail = false;
+  String error = "Make sure you have filled in all fields.";
 
   @override
   Widget build(BuildContext context) {
@@ -139,22 +135,27 @@ class CreateAcctFormState extends State<CreateAcctForm> {
           children: [
             TextFormField(
               controller: emailController,
-              decoration: const InputDecoration(
-                  hintText: "What is your email?"
+              decoration: InputDecoration(
+                  hintText: "What is your email?",
+                errorText: createfail ? error : null,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                )
               ),
 
             ),
             TextFormField(
-              controller: usernameController,
+              controller: fullnameController,
               decoration: const InputDecoration(
-                hintText: "Type in a username (max 20 characters)"
+                hintText: "Type in a username (max 20 characters)",
               ),
               maxLength: 20,
             ),
             TextFormField(
               controller: passwordController,
-              decoration: const InputDecoration(
-                hintText: "Type in a password (max 20 characters)"
+              decoration: InputDecoration(
+                hintText: "Type in a password (max 20 characters)",
+                errorText: createfail ? error : null,
               ),
               maxLength: 20,
             ),
@@ -176,8 +177,6 @@ class CreateAcctFormState extends State<CreateAcctForm> {
                 dropdownValue = value!;
                 print(dropdownValue);
               });},
-
-
             ),
             Row(
                 children: [
@@ -185,21 +184,17 @@ class CreateAcctFormState extends State<CreateAcctForm> {
                       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 16.0),
                       child: ElevatedButton(
                           onPressed: () async {
-                            if(passwordController.text == password2controller.text){try {
-                              UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
-                                  email: emailController.text,
-                                  password: passwordController.text
-                              );
-                            } on FirebaseAuthException catch (e) {
-                              if (e.code == 'weak-password') {
-                                print('The password provided is too weak.');
-                              } else if (e.code == 'email-already-in-use') {
-                                print('The account already exists for that email.');
-                              }
-                            } catch (e) {
-                              print(e);
-                            }
-                          }},
+                            if(_accountFormKey.currentState!.validate()){
+                              String result = await FirebaseService().CreateUser(name: fullnameController.text,
+                                  email: emailController.text, userType: dropdownValue!, password: passwordController.text);
+                                  if (result == "success"){
+                                      var url = "/${dropdownValue}home";
+                                      Navigator.pushNamed(context, url);
+                                  }  else {
+                                    createfail = true;
+                                    result = error;}
+                            }  else {createfail = true;}
+                          },
                           child: const Text("Submit")
                       )
                   )
