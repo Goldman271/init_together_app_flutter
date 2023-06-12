@@ -29,67 +29,88 @@ class LoginFormState extends State<LoginForm> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController usernameController = TextEditingController();
   TextEditingController passwordController = TextEditingController();
+  bool loginfail = false;
+  String error = "Login unsuccessful";
 
   @override
   Widget build(BuildContext context) {
-    return Form(
+    return Padding(padding: const EdgeInsets.symmetric(vertical: 10.0),
+    child: Form(
       key: _formKey,
       autovalidateMode: AutovalidateMode.onUserInteraction,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 1.5, horizontal: 13),
-            child: TextFormField(
-            decoration: const InputDecoration(
-              hintText: "Username/email",
-            ),
-            controller: usernameController,
-    ),),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 1.5, horizontal: 13),
-            child: TextFormField(
-              decoration: const InputDecoration(
-                hintText: "Password"
-            ),
-            controller: passwordController,
-            ),),
-          Align(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 1.5, horizontal: 13),
+              child: TextFormField(
+                decoration: InputDecoration(
+                  hintText: "Username/email",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                  errorText: loginfail ? error : null,
+                ),
+                controller: usernameController,
+              ),),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 1.5, horizontal: 13),
+              child: TextFormField(
+                decoration: InputDecoration(
+                    hintText: "Password",
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    errorText: loginfail ? error : null,
+                ),
+                controller: passwordController,
+              ),),
+            Align(
               alignment: Alignment.centerRight,
               child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-                    child: TextButton(
-                        onPressed: () {
-                          Navigator.pushNamed(context, '/newpassword');
-                        },
-                        child: const Text("Forgot password?")
-                    )
-          ),),
-          Center(
-            child:
-                  Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 32.0),
-                  child: ElevatedButton(
-                    onPressed: () async {await FirebaseService().LoginUser(email: usernameController.text, password: passwordController.text);},
-                    child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 18.0, vertical: 15.0),
-                    child:Text("Login", style: TextStyle(color: Colors.white))
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+                  child: TextButton(
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/newpassword');
+                      },
+                      child: const Text("Forgot password?")
+                  )
+              ),),
+            Center(
+              child:
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 32.0),
+                child: ElevatedButton(
+                  onPressed: () async {
+                    String result = await FirebaseService().LoginUser(email: usernameController.text, password: passwordController.text);
+                    if(result != "failure" && result != "user not found" && result != 'Wrong password provided for that user'){
+                      usernameController.clear();
+                      passwordController.clear();
+                      if (mounted) {Navigator.of(context).pop();} else {}
+                      Navigator.pushNamed(context, result);} else {
+                      setState((){error = result;
+                      loginfail = true;});
+                      }}
+                    ,
+                  child: const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 18.0, vertical: 15.0),
+                      child:Text("Login", style: TextStyle(color: Colors.white))
                   ),),
-          ),),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 30.0),
-            child:
-              Center(child: TextButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, "/createAcct");
-                },
-                child: const Text("Create New Account")
+              ),),
+            Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 30.0),
+                child:
+                Center(child: TextButton(
+                    onPressed: () {
+                      Navigator.pushNamed(context, "/createAcct");
+                    },
+                    child: const Text("Create New Account")
 
-              ))
-          )
-        ]
+                ))
+            )
+          ]
       ),
-    );
+    ));
   }
 }
 
@@ -146,8 +167,11 @@ class CreateAcctFormState extends State<CreateAcctForm> {
             ),
             TextFormField(
               controller: fullnameController,
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: "Type in a username (max 20 characters)",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  )
               ),
               maxLength: 20,
             ),
@@ -156,12 +180,18 @@ class CreateAcctFormState extends State<CreateAcctForm> {
               decoration: InputDecoration(
                 hintText: "Type in a password (max 20 characters)",
                 errorText: createfail ? error : null,
+                border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  )
               ),
               maxLength: 20,
             ),
             TextFormField(controller: password2controller,
-            decoration: const InputDecoration(
-                hintText: "Type in a password (max 20 characters)"
+            decoration: InputDecoration(
+                hintText: "Type in a password (max 20 characters)",
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(30),
+                )
             ),
             validator: (value) {
               if(value != passwordController.text) {
@@ -187,13 +217,16 @@ class CreateAcctFormState extends State<CreateAcctForm> {
                             if(_accountFormKey.currentState!.validate()){
                               String result = await FirebaseService().CreateUser(name: fullnameController.text,
                                   email: emailController.text, userType: dropdownValue!, password: passwordController.text);
+                              if(!context.mounted){
+                                return Navigator.of(context).pop();
+                              } else {
                                   if (result == "success"){
                                       var url = "/${dropdownValue}home";
                                       Navigator.pushNamed(context, url);
                                   }  else {
                                     createfail = true;
                                     result = error;}
-                            }  else {createfail = true;}
+                            }}  else {createfail = true;}
                           },
                           child: const Text("Submit")
                       )

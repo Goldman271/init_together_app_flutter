@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'authscreens.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -32,6 +33,9 @@ void main() async {
       "/": (context) => const Login(),
       "/createAcct": (context) => const CreateAcct(),
       "/newpassword": (context) => const Text("password change"),
+      "/studenthome": (context) => const Text("Student home"),
+      "/parenthome": (context) => const Text("Parent home"),
+      "/teacherhome": (context) => const Text("Teacher home"),
     },
   ));
 }
