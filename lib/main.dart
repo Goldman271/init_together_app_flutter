@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'authscreens.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'studentHome.dart';
 
 Map<int, Color> color =
 {
@@ -33,7 +34,7 @@ void main() async {
       "/": (context) => const Login(),
       "/createAcct": (context) => const CreateAcct(),
       "/newpassword": (context) => const Text("password change"),
-      "/studenthome": (context) => const Text("Student home"),
+      "/studenthome": (context) => const StudentNavDrawer(),
       "/parenthome": (context) => const Text("Parent home"),
       "/teacherhome": (context) => const Text("Teacher home"),
     },

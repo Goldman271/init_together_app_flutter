@@ -31,9 +31,11 @@ class LoginFormState extends State<LoginForm> {
   TextEditingController passwordController = TextEditingController();
   bool loginfail = false;
   String error = "Login unsuccessful";
+  bool passenable = true;
 
   @override
   Widget build(BuildContext context) {
+    double deviceHeight = MediaQuery.of(context).size.height;
     return Padding(padding: const EdgeInsets.symmetric(vertical: 10.0),
     child: Form(
       key: _formKey,
@@ -54,17 +56,24 @@ class LoginFormState extends State<LoginForm> {
                 controller: usernameController,
               ),),
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 1.5, horizontal: 13),
+              padding: const EdgeInsets.symmetric(vertical: 6.5, horizontal: 13),
+              child: SizedBox(height: deviceHeight*0.08,
               child: TextFormField(
+                obscureText: passenable ? true:false,
                 decoration: InputDecoration(
                     hintText: "Password",
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(30),
                     ),
                     errorText: loginfail ? error : null,
+                  suffixIcon: IconButton(
+                      onPressed:() {setState(() {
+                        if(passenable) {passenable = false;} else {passenable = true;}
+                      });},
+                      icon: Icon(passenable ? Icons.remove_red_eye:Icons.password)),
                 ),
                 controller: passwordController,
-              ),),
+              ),),),
             Align(
               alignment: Alignment.centerRight,
               child: Padding(
