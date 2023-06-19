@@ -1,9 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'authscreens.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'studentHome.dart';
+import 'firebase_service.dart';
 
 Map<int, Color> color =
 {
@@ -20,23 +22,33 @@ Map<int, Color> color =
 };
 
 void main() async {
+  String starturl = "/";
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  if(FirebaseService().auth.currentUser != null){
+    var userdata = await FirebaseService().getUserData(uid: FirebaseService().auth.currentUser!.uid);
+    starturl = "/${userdata["userType"]}home";
+  } else{
+    starturl = "/";}
   runApp(MaterialApp(
     title: "InitTogether",
-    initialRoute: '/',
+    initialRoute: starturl,
     theme: ThemeData(
-      primarySwatch: MaterialColor(0xFF3b4af5, color)
+      colorSchemeSeed: const Color(0xFF3b4af5)
     ),
     routes: {
       "/": (context) => const Login(),
       "/createAcct": (context) => const CreateAcct(),
       "/newpassword": (context) => const Text("password change"),
-      "/studenthome": (context) => const StudentNavDrawer(),
+      "/studenthome": (context) => const StudentHomepage(),
       "/parenthome": (context) => const Text("Parent home"),
       "/teacherhome": (context) => const Text("Teacher home"),
+      "/addSchools": (context) => const Text("Add schools"),
+      "/messages": (context) => const Text("Messages"),
+      "/bugreporting": (context) => const Text("Report a bug"),
+      "/tutorial": (context) => const Text("Tutorial"),
     },
   ));
 }

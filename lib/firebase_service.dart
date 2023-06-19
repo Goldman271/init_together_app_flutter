@@ -9,6 +9,7 @@ class FirebaseService {
   FirebaseStorage storage = FirebaseStorage.instance;
 
   Map? currentUser;
+
   FirebaseService();
 
   Future<String> LoginUser(
@@ -75,4 +76,8 @@ class FirebaseService {
     return _doc.data() as Map<String, dynamic>;
   }
 
+  Future<Map<String, dynamic>> getStudentData({required String uid}) async {
+    DocumentSnapshot _doc = await _db.collection('students').doc(uid).get();
+    return _doc.data() as Map<String, dynamic>;
+  }
 }
