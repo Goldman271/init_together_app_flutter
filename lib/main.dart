@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:init_together_app/studentClassScreen.dart';
 import 'authscreens.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -33,16 +34,20 @@ void main() async {
   } else{
     starturl = "/";}
   runApp(MaterialApp(
+    debugShowCheckedModeBanner: false,
     title: "InitTogether",
     initialRoute: starturl,
     theme: ThemeData(
-      colorSchemeSeed: const Color(0xFF3b4af5)
+      colorSchemeSeed: const Color(0xFF3b4af5),
+      visualDensity: VisualDensity.adaptivePlatformDensity,
     ),
     routes: {
       "/": (context) => const Login(),
       "/createAcct": (context) => const CreateAcct(),
       "/newpassword": (context) => const Text("password change"),
       "/studenthome": (context) => const StudentHomepage(),
+      "/studentClasses": (context) => const StudentClassView(),
+      "/studentClassDetail": (context) => const ClassDetailScreen(),
       "/parenthome": (context) => const Text("Parent home"),
       "/teacherhome": (context) => const Text("Teacher home"),
       "/addSchools": (context) => const Text("Add schools"),

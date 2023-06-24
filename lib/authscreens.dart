@@ -106,8 +106,7 @@ class LoginFormState extends State<LoginForm> {
                       child:Text("Login", style: TextStyle(color: Colors.white))
                   ),),
               ),),
-            Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 30.0),
+            Expanded(
                 child:
                 Center(child: TextButton(
                     onPressed: () {

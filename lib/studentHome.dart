@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'firebase_service.dart';
+import 'studentClassScreen.dart';
 
 class StudentHomepageInfo extends StatefulWidget{
   const StudentHomepageInfo({super.key});
@@ -11,73 +12,92 @@ class StudentHomepageInfo extends StatefulWidget{
 
 class StudentHomepageInfoState extends State<StudentHomepageInfo> {
 
-  Widget build(BuildContext context){
+  @override
+  Widget build(BuildContext context) {
     double deviceWidth = MediaQuery.of(context).size.width;
     double deviceHeight = MediaQuery.of(context).size.height;
-  Future<Map> studentInfo = FirebaseService().getStudentData(uid: FirebaseService().auth.currentUser!.uid);
-  return Column(
-    children: [const Image(
-      image: AssetImage("assets/images/defaultpfp.jpg")
-    ),
-      Row(
-      children: [FutureBuilder(
-          future: studentInfo,
-          builder: (BuildContext context, AsyncSnapshot snapshot) {
-            List<Widget> containers;
-            String? name;
-            if(snapshot.hasData){
-              List<Widget> widglist = [];
-              name = snapshot.data!["name"];
-              for (var i in snapshot.data!["schools"]){
-                widglist.add(Container(
-                  color: const Color(0xFFb2d8f7),
-                  child: Column(
-                    children: [
-                      const Icon(Icons.school),
-                      Text(i)
-                    ],
-                  ),
-                ));
-              }
-              containers = widglist;
-            } else if (snapshot.hasError){
-                  containers = [const Icon(Icons.error, color: Colors.red)];
-            } else {
-              containers = [const CircularProgressIndicator(),
-                const Padding(
-                  padding: EdgeInsets.only(top: 16),
-                  child: Text('Awaiting result...'),
-                ),];
-            }
-            containers.insert(0, const Padding(
-                padding: EdgeInsets.symmetric(horizontal:10.0),
-                child: Text("Your Schools:")));
-            return Padding(
-                padding: const EdgeInsets.symmetric(vertical: 7.5, horizontal: 17.0),
+    Future<Map> studentInfo = FirebaseService().getStudentData(uid: FirebaseService().auth.currentUser!.uid);
+    return Center(child: Column(
+      children: [
+        FutureBuilder(future: studentInfo, builder: (BuildContext context, AsyncSnapshot snapshot){
+          List<Widget> containers;
+          List<Widget> classeslist = [];
+          String? name;
+          if(snapshot.connectionState == ConnectionState.done){
+          if(snapshot.hasData){
+            List<Widget> widglist = [];
+            name = snapshot.data!["name"];
+            for (var i in snapshot.data!["schools"]){
+              widglist.add(Container(
+                padding: const EdgeInsets.all(7.5),
+                color: const Color(0xFFb2d8f7),
                 child: Column(
-                    children: [Row(
-                  children: [Padding(
-                      padding: EdgeInsets.only(left: deviceWidth*0.06),
-                      child: Text('$name', style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 20.2)))],
-                ), const Divider(height: 17.5, color: Colors.black),Row(
-                    children: containers)]));
+                  children: [
+                    const Icon(Icons.school),
+                    Text(i, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),)
+                  ],
+                ),
+              ));
+            }
+            containers = widglist;
+            List<Widget> classeslist2 = [];
+            for (var i in snapshot.data!["classes"]){
+              classeslist2.add(
+                  ListTile(
+                    leading: const Icon(Icons.book_outlined),
+                    title: Text(i["className"]),
+                    subtitle: Text(i["teacher"]),
+                    onTap: () async{
+                      Map classinfo = await FirebaseService().getClassInfo(path: i["accessEvents"]);
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => ClassDetailScreen(classInfo: classinfo)));},
+                  )
+              );
+            }
+            classeslist = classeslist2;
+          } else if (snapshot.hasError){
+            containers = [const Icon(Icons.error, color: Colors.red)];
+          } else {containers = [IconButton(
+          icon: const Icon(Icons.add),
+          onPressed: () {
+            Navigator.pushNamed(context, "/addSchools");
           }
-      )],
-    )],
-  );
+          )];}
+          } else {
+            containers = [const CircularProgressIndicator(),
+              Padding(
+                padding: EdgeInsets.only(top: deviceHeight*0.05),
+                child: const Text('Awaiting result...'),
+              ),];
+          }
+          containers.insert(0, Padding(
+              padding: EdgeInsets.symmetric(horizontal:10.0, vertical: deviceHeight*0.05),
+              child: Text("Your Schools:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600))));
+          classeslist.insert(0, const ListTile(title: Text("Your classes", textAlign: TextAlign.center,)));
+          return Expanded(child: Column(children: [
+          Row(children: containers), Expanded(child: Align(alignment: Alignment.centerLeft, child:
+            SizedBox(
+                height: 0.4*deviceHeight,
+                child: Row(children: [ListView(children: classeslist), const UpcomingView()])))),
+          ]));
+        }),
+      ],
+    ),);
   }
 }
-
 
 class StudentHomepage extends StatelessWidget {
   const StudentHomepage({super.key});
 
   @override
   Widget build(BuildContext context) {
-
-    return Scaffold(
+    double deviceHeight = MediaQuery.of(context).size.height;
+    return SafeArea(child: Scaffold(
       appBar: AppBar(
-        title: const Text("Home"),
+        toolbarHeight: deviceHeight*0.1,
+        title: const Image(image: AssetImage("assets/images/squarelogo-removebg-preview.png")),
         actions: [IconButton(
             onPressed: () {
               Navigator.pushNamed(context, "/messages");
@@ -102,21 +122,23 @@ class StudentHomepage extends StatelessWidget {
         ])],
         centerTitle: true,
       ),
-      drawer: const StudentNavDrawer(),
+      drawer: const StudentNavDrawer(highlightIndex: 0),
       body: const StudentHomepageInfo(),
-    );
+    ));
   }
 }
 
 class StudentNavDrawer extends StatefulWidget {
-  const StudentNavDrawer({super.key});
+  final int? highlightIndex;
+  const StudentNavDrawer({super.key, this.highlightIndex});
 
   @override
-  State<StudentNavDrawer> createState() => StudentNavState();
+  State<StudentNavDrawer> createState() => StudentNavState(selectedIndex: highlightIndex);
 }
 
 class StudentNavState extends State<StudentNavDrawer> {
-  int selectedIndex = 0;
+  int? selectedIndex;
+  StudentNavState({this.selectedIndex});
 
   @override
   Widget build(BuildContext context) {
@@ -132,22 +154,14 @@ class StudentNavState extends State<StudentNavDrawer> {
                   ? const Icon(Icons.home_filled)
                   : const Icon(Icons.home_outlined),
               title: const Text("Home"),
-              onTap: () =>
+              onTap: () {
+                if (selectedIndex != 0){
+                  Navigator.popAndPushNamed(context, "/studenthome");
+                }
                   setState(() {
                     selectedIndex = 0;
                   }
-                  ),
-            ),
-            ListTile(
-              leading: selectedIndex == 1
-                  ? const Icon(Icons.person)
-                  : const Icon(Icons.person_outline),
-              title: const Text("Profile"),
-              onTap: () =>
-                  setState(() {
-                    selectedIndex = 1;
-                  }
-                  ),
+                  );},
             ),
             ListTile(
               leading: selectedIndex == 2 ? const Icon(
@@ -164,12 +178,12 @@ class StudentNavState extends State<StudentNavDrawer> {
               leading: selectedIndex == 3 ? const Icon(Icons.book) : const Icon(
                   Icons.book_outlined),
               title: const Text("Classes"),
-              onTap: () =>
+              onTap: () {
                   setState(() {
                     selectedIndex = 3;
-                  }
+                  });
+              Navigator.pushNamed(context, "/studentClasses");}
                   ),
-            ),
             ListTile(
               leading: selectedIndex == 4
                   ? const Icon(Icons.people_alt)
@@ -206,5 +220,76 @@ class StudentNavState extends State<StudentNavDrawer> {
           ],
         ));
   }
+}
 
+class UpcomingView extends StatefulWidget {
+  const UpcomingView({super.key});
+
+  @override
+  State<UpcomingView> createState() => UpcomingViewState();
+}
+
+class UpcomingViewState extends State<UpcomingView> {
+  bool eventsorassignments = true;
+
+  @override
+  Widget build(BuildContext context){
+    return FutureBuilder(future: FirebaseService().getStudentEvents(uid: FirebaseService().auth.currentUser!.uid),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+        int numberOfTiles = 0;
+        print(snapshot.data);
+        if(snapshot.connectionState == ConnectionState.done){
+          if(snapshot.hasData){
+          if(snapshot.data![0].length >= snapshot.data![1].length) {
+            int numberOfTiles = snapshot.data![0].length;
+          } else if (snapshot.data![1].length > snapshot.data![0].length){
+            int numberOfTiles = snapshot.data![1].length;
+          } else {
+            int numberOfTiles = 0;
+          }
+          int tilesBuiltCounter = 0;
+          List<Widget> tiles = [];
+          while(tilesBuiltCounter < numberOfTiles){
+            tiles.add(
+              ExpansionTile(title: eventsorassignments ?
+              Text(snapshot.data![1][tilesBuiltCounter]["name"])
+                  : Text(snapshot.data![0][tilesBuiltCounter]["name"])
+                ,
+              subtitle: eventsorassignments ?
+              Text(snapshot.data![1][tilesBuiltCounter]["time"])
+                  : Text(snapshot.data![0][tilesBuiltCounter]["deadline"]),
+              controlAffinity: eventsorassignments ?
+              ListTileControlAffinity.trailing :
+                  null,
+              children: eventsorassignments ?
+              [Text(snapshot.data![1][tilesBuiltCounter]["description"])]
+                  : []
+              )
+            );
+          }
+
+          tiles.add(ListTile(leading: eventsorassignments ? IconButton(
+              icon: const Icon(Icons.assignment_outlined),
+              onPressed: (){setState(() {
+                eventsorassignments = false;
+              });}
+          ) : const Icon(Icons.assignment),
+              title: Text("Upcoming"),
+              trailing: eventsorassignments ? const Icon(Icons.event) :
+              IconButton(
+                  onPressed: (){setState(() {
+                    eventsorassignments = true;
+                  });},
+                  icon: const Icon(Icons.event_outlined))
+          ));
+
+        return ListView(children: tiles);} else {return const ListTile(
+          title: Text("Nothing to show"),
+        );}} else {
+          return const ListTile(leading: CircularProgressIndicator(),
+              title: Text("Awaiting result..."));
+        }
+    }
+    );
+  }
 }

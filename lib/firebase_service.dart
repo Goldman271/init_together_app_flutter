@@ -80,4 +80,45 @@ class FirebaseService {
     DocumentSnapshot _doc = await _db.collection('students').doc(uid).get();
     return _doc.data() as Map<String, dynamic>;
   }
+
+  Future<Map> getClassInfo({required DocumentReference path}) async {
+    DocumentSnapshot _doc = await path.get();
+    return _doc.data() as Map;
+  }
+
+  Future<Map> getTeacherContactInfo({required String teacher}) async {
+    QuerySnapshot _doc = await _db.collection('teachers').where("name", isEqualTo: teacher).get();
+    for (var snapshot in _doc.docs){
+      return snapshot.data() as Map;
+    }
+    return {};
+  }
+
+  Future<List<List>> getStudentEvents({required String uid}) async {
+    List eventsList = [];
+    List assignmentsList = [];
+    DocumentSnapshot studentInfo = await _db.collection("students").doc(uid).get();
+    Map info = studentInfo.data() as Map;
+    final time = DateTime.now();
+    for (var i in info!["classes"]){
+      Map events = await getClassInfo(path: i["accessEvents"]);
+      for(var i in events["events"]){
+            eventsList.add(i);
+      }
+      for (var i in events["assignments"]) {
+        assignmentsList.add(i);
+      }
+    }
+    for(var i in info!["schools"]){
+      Map schoolInfo = await _db.collection("schools").doc(i).get() as Map;
+      for(var i in schoolInfo["events"]){
+        eventsList.add(i);
+      }
+    }
+
+    assignmentsList.sort((a,b) => a["deadline"].seconds.compareTo(b["deadline"].seconds));
+    eventsList.sort((a,b) => a["deadline"].seconds.compareTo(b["deadline"].seconds));
+    List<List> masterList = [assignmentsList, eventsList];
+    return masterList;
+  }
 }
