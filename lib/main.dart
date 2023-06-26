@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:init_together_app/addparentsstudentsandschools.dart';
 import 'package:init_together_app/studentClassScreen.dart';
 import 'authscreens.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -43,14 +44,16 @@ void main() async {
     ),
     routes: {
       "/": (context) => const Login(),
+      "/calendar": (context) => const Text("Calendar"),
       "/createAcct": (context) => const CreateAcct(),
       "/newpassword": (context) => const Text("password change"),
       "/studenthome": (context) => const StudentHomepage(),
       "/studentClasses": (context) => const StudentClassView(),
       "/studentClassDetail": (context) => const ClassDetailScreen(),
+      "/addParents": (context) => const addAccountsPage(),
       "/parenthome": (context) => const Text("Parent home"),
       "/teacherhome": (context) => const Text("Teacher home"),
-      "/addSchools": (context) => const Text("Add schools"),
+      "/addSchools": (context) => const addAccountsPage(),
       "/messages": (context) => const Text("Messages"),
       "/bugreporting": (context) => const Text("Report a bug"),
       "/tutorial": (context) => const Text("Tutorial"),

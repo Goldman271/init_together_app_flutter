@@ -44,6 +44,9 @@ dependencies:
   firebase_ui_auth: ^1.4.0
   flutterfire_ui: ^0.4.3+20
   firebase_storage: ^11.2.2
+  googleapis: ^11.2.0
+  googleapis_auth: ^1.4.1
+  url_launcher: ^6.1.11
 
 dev_dependencies:
   flutter_test:

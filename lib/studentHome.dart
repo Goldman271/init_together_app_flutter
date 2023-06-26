@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -23,6 +24,7 @@ class StudentHomepageInfoState extends State<StudentHomepageInfo> {
           List<Widget> containers;
           List<Widget> classeslist = [];
           String? name;
+          List<Widget> parents = [Padding(padding: EdgeInsets.symmetric(horizontal: 10, vertical: deviceHeight*0.03), child: Text("Parents:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)))];
           if(snapshot.connectionState == ConnectionState.done){
           if(snapshot.hasData){
             List<Widget> widglist = [];
@@ -57,6 +59,22 @@ class StudentHomepageInfoState extends State<StudentHomepageInfo> {
               );
             }
             classeslist = classeslist2;
+            for (var i in snapshot.data!["parents"]){
+              parents.add(Container(
+                padding: const EdgeInsets.all(7.5),
+                color: const Color(0xFFb2d8f7),
+                child: Column(
+                  children: [
+                    const Icon(Icons.person),
+                    Text(i, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),)
+                  ],
+                ),
+              ));
+            }
+            parents.add(IconButton(onPressed: (){
+                Navigator.pushNamed(context, "/addParents");
+            },
+                icon: const Icon(Icons.add_circle)));
           } else if (snapshot.hasError){
             containers = [const Icon(Icons.error, color: Colors.red)];
           } else {containers = [IconButton(
@@ -77,10 +95,11 @@ class StudentHomepageInfoState extends State<StudentHomepageInfo> {
               child: Text("Your Schools:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600))));
           classeslist.insert(0, const ListTile(title: Text("Your classes", textAlign: TextAlign.center,)));
           return Expanded(child: Column(children: [
-          Row(children: containers), Expanded(child: Align(alignment: Alignment.centerLeft, child:
+          Row(children: containers), SizedBox(height: 0.08*deviceHeight, child: Column(children: [Expanded(child: ListView(scrollDirection: Axis.horizontal, children: parents))])), Expanded(child: Align(alignment: Alignment.centerLeft, child:
             SizedBox(
                 height: 0.4*deviceHeight,
-                child: Row(children: [ListView(children: classeslist), const UpcomingView()])))),
+                width: deviceWidth,
+                child: Row(children: [Expanded(child: ListView(children: classeslist)), const Expanded(child: UpcomingView())])))),
           ]));
         }),
       ],
@@ -164,6 +183,15 @@ class StudentNavState extends State<StudentNavDrawer> {
                   );},
             ),
             ListTile(
+              leading: selectedIndex == 1 ? const Icon(Icons.calendar_month):
+                  const Icon(Icons.calendar_month_outlined),
+              title: const Text("Calendar"),
+              onTap: () {setState(() {
+                selectedIndex = 1;
+              });
+                Navigator.pushNamed(context, "/calendar");},
+            ),
+            ListTile(
               leading: selectedIndex == 2 ? const Icon(
                   Icons.help_center_rounded) : const Icon(
                   Icons.help_center_outlined),
@@ -231,65 +259,59 @@ class UpcomingView extends StatefulWidget {
 
 class UpcomingViewState extends State<UpcomingView> {
   bool eventsorassignments = true;
+  Future<List<List>> upcoming = FirebaseService().getStudentEvents(uid: FirebaseService().auth.currentUser!.uid);
 
   @override
   Widget build(BuildContext context){
-    return FutureBuilder(future: FirebaseService().getStudentEvents(uid: FirebaseService().auth.currentUser!.uid),
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
-        int numberOfTiles = 0;
-        print(snapshot.data);
-        if(snapshot.connectionState == ConnectionState.done){
-          if(snapshot.hasData){
-          if(snapshot.data![0].length >= snapshot.data![1].length) {
-            int numberOfTiles = snapshot.data![0].length;
-          } else if (snapshot.data![1].length > snapshot.data![0].length){
-            int numberOfTiles = snapshot.data![1].length;
-          } else {
-            int numberOfTiles = 0;
-          }
-          int tilesBuiltCounter = 0;
-          List<Widget> tiles = [];
-          while(tilesBuiltCounter < numberOfTiles){
-            tiles.add(
-              ExpansionTile(title: eventsorassignments ?
-              Text(snapshot.data![1][tilesBuiltCounter]["name"])
-                  : Text(snapshot.data![0][tilesBuiltCounter]["name"])
-                ,
-              subtitle: eventsorassignments ?
-              Text(snapshot.data![1][tilesBuiltCounter]["time"])
-                  : Text(snapshot.data![0][tilesBuiltCounter]["deadline"]),
-              controlAffinity: eventsorassignments ?
-              ListTileControlAffinity.trailing :
-                  null,
-              children: eventsorassignments ?
-              [Text(snapshot.data![1][tilesBuiltCounter]["description"])]
-                  : []
-              )
-            );
-          }
-
-          tiles.add(ListTile(leading: eventsorassignments ? IconButton(
-              icon: const Icon(Icons.assignment_outlined),
-              onPressed: (){setState(() {
-                eventsorassignments = false;
-              });}
-          ) : const Icon(Icons.assignment),
-              title: Text("Upcoming"),
-              trailing: eventsorassignments ? const Icon(Icons.event) :
-              IconButton(
-                  onPressed: (){setState(() {
-                    eventsorassignments = true;
-                  });},
-                  icon: const Icon(Icons.event_outlined))
-          ));
-
-        return ListView(children: tiles);} else {return const ListTile(
-          title: Text("Nothing to show"),
-        );}} else {
-          return const ListTile(leading: CircularProgressIndicator(),
-              title: Text("Awaiting result..."));
-        }
+    return Column(children: [
+    ListTile(leading: eventsorassignments ? IconButton(
+        icon: const Icon(Icons.assignment_outlined),
+    onPressed: () {
+    setState(() {
+    eventsorassignments = false;
+    });
     }
-    );
-  }
-}
+    ) : const Icon(Icons.assignment),
+    title: Text("Upcoming", style: TextStyle(fontSize: 14.0),),
+    trailing: eventsorassignments ? const Icon(Icons.event) :
+    IconButton(
+    onPressed: () {
+    setState(() {
+    eventsorassignments = true;
+    });
+    },
+    icon: const Icon(Icons.event_outlined))
+    ),
+      FutureBuilder(future: upcoming,
+        builder: (BuildContext context, AsyncSnapshot snapshot)
+    {
+      if (snapshot.connectionState == ConnectionState.done) {
+        return Expanded(child: ListView.builder(
+          itemCount: eventsorassignments
+              ? snapshot.data[1].length
+              : snapshot.data[0].length,
+          itemBuilder: (BuildContext context, int index) {
+              return ExpansionTile(
+                  title: eventsorassignments ?
+              Text(snapshot.data![1][index]["name"])
+                  : Text(snapshot.data![0][index]["name"])
+                  ,
+                  subtitle: eventsorassignments ?
+                  Text(snapshot.data![1][index]["time"])
+                      : Text(snapshot.data![0][index]["deadline"]),
+                  controlAffinity: eventsorassignments ?
+                  ListTileControlAffinity.trailing :
+                  null,
+                  children: eventsorassignments ?
+                  [Text(snapshot.data![1][index]["description"])]
+                      : [const Text("History 101 - Shakthi Karthik")]
+              );
+            }
+        ));
+      }
+      else {
+        return const ListTile(leading: CircularProgressIndicator(),
+            title: Text("Awaiting result..."));
+      }
+    }
+    )]);}}
