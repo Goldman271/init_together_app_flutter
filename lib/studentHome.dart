@@ -21,15 +21,14 @@ class StudentHomepageInfoState extends State<StudentHomepageInfo> {
     return Center(child: Column(
       children: [
         FutureBuilder(future: studentInfo, builder: (BuildContext context, AsyncSnapshot snapshot){
-          List<Widget> containers = [];
+          List<Widget> containers;
           List<Widget> classeslist = [];
           String? name;
-          List<Widget> parents = [Padding(padding: EdgeInsets.symmetric(horizontal: 10, vertical: deviceHeight*0.03), child: const Center(child: Text("Parents:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600))))];
+          List<Widget> parents = [Padding(padding: EdgeInsets.symmetric(horizontal: 10, vertical: deviceHeight*0.03), child: Text("Parents:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)))];
           if(snapshot.connectionState == ConnectionState.done){
           if(snapshot.hasData){
             List<Widget> widglist = [];
             name = snapshot.data!["name"];
-            if(snapshot.data["schools"]!= null){
             for (var i in snapshot.data!["schools"]){
               widglist.add(Container(
                 padding: const EdgeInsets.all(7.5),
@@ -41,10 +40,9 @@ class StudentHomepageInfoState extends State<StudentHomepageInfo> {
                   ],
                 ),
               ));
-            }} else{}
+            }
             containers = widglist;
             List<Widget> classeslist2 = [];
-            if(snapshot.data!["classes"]!=null){
             for (var i in snapshot.data!["classes"]){
               classeslist2.add(
                   ListTile(
@@ -59,9 +57,8 @@ class StudentHomepageInfoState extends State<StudentHomepageInfo> {
                               builder: (context) => ClassDetailScreen(classInfo: classinfo)));},
                   )
               );
-            }} else{}
+            }
             classeslist = classeslist2;
-            if(snapshot.data["parents"]!=null){
             for (var i in snapshot.data!["parents"]){
               parents.add(Container(
                 padding: const EdgeInsets.all(7.5),
@@ -73,14 +70,19 @@ class StudentHomepageInfoState extends State<StudentHomepageInfo> {
                   ],
                 ),
               ));
-            }} else{}
+            }
             parents.add(IconButton(onPressed: (){
                 Navigator.pushNamed(context, "/addParents");
             },
                 icon: const Icon(Icons.add_circle)));
           } else if (snapshot.hasError){
             containers = [const Icon(Icons.error, color: Colors.red)];
-          } else {}
+          } else {containers = [IconButton(
+          icon: const Icon(Icons.add),
+          onPressed: () {
+            Navigator.pushNamed(context, "/addSchools");
+          }
+          )];}
           } else {
             containers = [const CircularProgressIndicator(),
               Padding(
@@ -88,18 +90,12 @@ class StudentHomepageInfoState extends State<StudentHomepageInfo> {
                 child: const Text('Awaiting result...'),
               ),];
           }
-          containers.add(IconButton(
-              icon: const Icon(Icons.add_circle),
-              onPressed: () {
-                Navigator.pushNamed(context, "/addSchools");}));
-          containers.insert(0, const Center(child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              child: Text("Your Schools:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600)))));
+          containers.insert(0, Padding(
+              padding: EdgeInsets.symmetric(horizontal:10.0, vertical: deviceHeight*0.05),
+              child: Text("Your Schools:", style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600))));
           classeslist.insert(0, const ListTile(title: Text("Your classes", textAlign: TextAlign.center,)));
           return Expanded(child: Column(children: [
-            SizedBox(height: 0.16*deviceHeight,
-             child: Column(children: [Expanded(child: ListView(scrollDirection: Axis.horizontal, children: containers)),
-          Expanded(child: ListView(scrollDirection: Axis.horizontal, children: parents))])), Expanded(child: Align(alignment: Alignment.centerLeft, child:
+          Row(children: containers), SizedBox(height: 0.08*deviceHeight, child: Column(children: [Expanded(child: ListView(scrollDirection: Axis.horizontal, children: parents))])), Expanded(child: Align(alignment: Alignment.centerLeft, child:
             SizedBox(
                 height: 0.4*deviceHeight,
                 width: deviceWidth,
@@ -290,7 +286,6 @@ class UpcomingViewState extends State<UpcomingView> {
         builder: (BuildContext context, AsyncSnapshot snapshot)
     {
       if (snapshot.connectionState == ConnectionState.done) {
-        if(snapshot.hasData){
         return Expanded(child: ListView.builder(
           itemCount: eventsorassignments
               ? snapshot.data[1].length
@@ -313,7 +308,7 @@ class UpcomingViewState extends State<UpcomingView> {
               );
             }
         ));
-      } else {return const ListTile(title: Text("No events to show"));}}
+      }
       else {
         return const ListTile(leading: CircularProgressIndicator(),
             title: Text("Awaiting result..."));

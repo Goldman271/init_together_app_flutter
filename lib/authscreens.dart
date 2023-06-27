@@ -208,7 +208,6 @@ class CreateAcctFormState extends State<CreateAcctForm> {
               return null;
             }),
             DropdownButtonFormField(
-              hint: const Text("Select user type"),
               value: dropdownValue,
               items: const [DropdownMenuItem(value: "student", child: Text("Student")),
                 DropdownMenuItem(value: "parent", child: Text("Parent"))],

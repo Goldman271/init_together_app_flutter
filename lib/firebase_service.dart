@@ -54,17 +54,11 @@ class FirebaseService {
         await _db.collection('students').doc(userId).set({
           "name": name,
           "email": email,
-          "schools": [],
-          "parents": [],
-          "classes": [],
         });
       } else if (userType == 'parent') {
         await _db.collection('parents').doc(userId).set({
           "name": name,
           "email": email,
-          "concerned": false,
-          "students": [],
-          "schools": [],
         });
       }
       return "success";
@@ -223,7 +217,7 @@ class FirebaseService {
         Map snapshotData = snapshot.data() as Map;
         matches.add(snapshotData);
       }
-      return ListView.builder(itemCount: matches.length > 5 ? 5: matches.length,
+      return ListView.builder(itemCount: 5,
           itemBuilder: (BuildContext context, int index) {
             return ListTile(title: Text(matches[index]["name"]),
               subtitle: Text(matches[index]["email"]),

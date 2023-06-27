@@ -16,21 +16,3 @@ For help getting started with Flutter development, view the
 samples, guidance on mobile development, and a full API reference.
 
 
-return SizedBox(height: 70, child: Column(children: [Expanded(child: ListView(shrinkWrap: true, children: tiles,))],));
-tiles.add(ExpansionTile(
-                    title: Text(i["name"]), subtitle: Text(i["time"]), controlAffinity: ListTileControlAffinity.trailing,
-                    children: [Text(i["description"])],));
-
-                    calendarBuilders: CalendarBuilders(
-                                  dowBuilder: (context, day) {
-                                    List<Widget> tiles = [];
-                                    List eventsList = getEventsForDay(events: events, day: day);
-                                    if(eventsList.isEmpty){return const Center(child: Text("No events to be shown"));} else{
-                                    for(Map i in eventsList){
-                                      tiles.add(Column(children: [Text(i["name"]), Text(i["time"]), Text(i["description"])],));
-                                    }}
-                                      return Row(children: tiles);
-
-                                  }
-                                ),
-
