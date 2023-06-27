@@ -47,6 +47,7 @@ dependencies:
   googleapis: ^11.2.0
   googleapis_auth: ^1.4.1
   url_launcher: ^6.1.11
+  table_calendar: ^3.0.9
 
 dev_dependencies:
   flutter_test:

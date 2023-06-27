@@ -88,7 +88,7 @@ class addFormState extends State<addAccountForm>{
           ),
           ElevatedButton(onPressed: () async {
               bool end = await FirebaseService().addSchool(name: schoolnameController.text);
-              if (end) {setState(() {
+              if (end) { print("add successful");} else {setState(() {
                 setState(() {
                   notFound2 = true;
                 });

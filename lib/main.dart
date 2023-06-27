@@ -5,6 +5,7 @@ import 'package:init_together_app/studentClassScreen.dart';
 import 'authscreens.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'calendar.dart';
 import 'firebase_options.dart';
 import 'studentHome.dart';
 import 'firebase_service.dart';
@@ -44,7 +45,7 @@ void main() async {
     ),
     routes: {
       "/": (context) => const Login(),
-      "/calendar": (context) => const Text("Calendar"),
+      "/calendar": (context) => const Calendar(),
       "/createAcct": (context) => const CreateAcct(),
       "/newpassword": (context) => const Text("password change"),
       "/studenthome": (context) => const StudentHomepage(),
