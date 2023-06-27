@@ -1,0 +1,54 @@
+import 'package:flutter/material.dart';
+
+
+
+class SupportPage extends StatefulWidget {
+  const SupportPage({Key? key}) : super(key: key);
+
+  @override
+  MentalHealth createState() => MentalHealth();
+}
+
+
+
+class MentalHealth extends State<SupportPage> {
+
+  //create variable for slider
+  double _currentValue = 0;
+
+  @override 
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Support Page"),
+      ),
+      body: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+        Text(_currentValue.toString(), style: TextStyle(fontSize: 20)),
+        Slider(
+          value: _currentValue,
+          min: 0,
+          max: 10,
+          divisions: 5,
+           onChanged: (value) {
+            setState((){
+              _currentValue = value;
+            },
+            );
+           }
+           )
+      ],)
+    
+
+
+    );
+
+
+  }}
+
+
+
+
+
+  void main() => runApp(SupportPage());
